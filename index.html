@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Эксперимент — Проверка и память (Плита и лампы)</title>
+  <title>Когнитивный эксперимент — Внимание и память</title>
   <style>
     :root {
       --primary: #2563eb;
@@ -43,7 +43,7 @@
     .admin-link:hover { color: var(--text); background: rgba(255,255,255,0.05); }
 
     h1, h2, h3 { margin: 0 0 10px 0; font-weight: 700; text-align: center; }
-    h1 { font-size: 1.35rem; color: #fff; }
+    h1 { font-size: 1.32rem; color: #fff; }
     h2 { font-size: 1.15rem; }
     p { margin: 0 0 16px 0; font-size: 0.92rem; line-height: 1.5; color: var(--text-muted); text-align: center; }
 
@@ -152,16 +152,24 @@
 
 <div class="container">
   <div class="top-bar">
-    <span class="badge" id="top-badge">НГУ · Тревожные расстройства</span>
+    <span class="badge" id="top-badge">НГУ · Лаборатория психологии</span>
     <span class="admin-link" onclick="toggleAdminPanel()">📊 Сводка группы</span>
   </div>
 
-  <!-- SCREEN 1: ВВЕДЕНИЕ -->
+  <!-- SCREEN 1: ВВЕДЕНИЕ (Чистая нейтральная инструкция без подсказки гипотезы) -->
   <div id="screen-intro">
-    <h1>Опыт «Проверка и память»</h1>
-    <p>Парадигма Марселя ван ден Хаута (van den Hout & Kindt, 2003)<br>Изучение механизмов компульсивных проверок и метапамяти</p>
+    <h1>Исследование внимания и рутинных действий</h1>
+    <p style="color:#cbd5e1; font-size:0.9rem; line-height:1.5; margin-bottom:14px;">
+      Вам предстоит выполнить серию действий с виртуальной бытовой приборной панелью и ответить на вопросы о вашем непосредственном восприятии.
+    </p>
+
+    <div style="background:#0f172a; border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:18px; font-size:0.83rem; color:#94a3b8; text-align:left; line-height:1.5;">
+      <div style="font-weight:700; color:#e2e8f0; margin-bottom:4px;">📌 Инструкция для участника —</div>
+      • Выполняйте каждое действие внимательно и сосредоточенно, как если бы вы выключали приборы перед выходом из квартиры.<br>
+      • На шкалах ответов ориентируйтесь исключительно на свои непосредственные ощущения прямо в этот момент.
+    </div>
     
-    <div style="margin: 20px 0;">
+    <div style="margin: 16px 0;">
       <label style="display:block; font-size:0.85rem; color:#cbd5e1; margin-bottom:6px;">Анонимный код участника (любые 3 символа)</label>
       <input type="text" id="subj-code" value="" placeholder="например 712" maxlength="10" 
              style="width:100%; padding:12px; border-radius:10px; background:#0f172a; border:1px solid var(--border); color:#fff; font-size:1.1rem; text-align:center;">
@@ -171,17 +179,17 @@
       <label style="display:block; font-size:0.85rem; color:#cbd5e1; margin-bottom:6px;">Условие эксперимента</label>
       <select id="condition-select" style="width:100%; padding:12px; border-radius:10px; background:#0f172a; border:1px solid var(--border); color:#fff; font-size:0.95rem;">
         <option value="RANDOM">Случайное распределение (РКИ)</option>
-        <option value="STOVE">Карточка А — Газовая плита (Опытная)</option>
-        <option value="BULBS">Карточка Б — Световые лампы (Контроль)</option>
+        <option value="STOVE">Панель А — Газовая плита (Опытная)</option>
+        <option value="BULBS">Панель Б — Световые индикаторы (Контроль)</option>
       </select>
     </div>
 
-    <button class="btn" onclick="startFlow()">Войти в эксперимент</button>
+    <button class="btn" onclick="startFlow()">Начать выполнение</button>
   </div>
 
   <!-- SCREEN 2: ПРОВЕРКА 1 (БАЗОВЫЙ ЗАМЕР) -->
   <div id="screen-check1" style="display:none;">
-    <h2 id="check1-title">Проверка 1</h2>
+    <h2 id="check1-title">Действие 1 — Исходное выключение</h2>
     <p id="check1-desc">Установите все 4 элемента по очереди (1, 2, 3, 4) в положение <b>«ВЫКЛЮЧЕНО»</b> и внимательно проверьте взглядом.</p>
     
     <div class="apparatus-panel">
@@ -193,12 +201,12 @@
 
   <!-- SCREEN 3: ШКАЛЫ МЕТАПАМЯТИ 1 -->
   <div id="screen-vas1" style="display:none;">
-    <h2>Оценки после Проверки 1</h2>
+    <h2>Оценки восприятия 1</h2>
     <p>Ответьте сразу по памяти, не возвращаясь назад (0 — совсем нет, 100 — полностью).</p>
 
     <div class="slider-box">
       <div class="slider-header">
-        <span>1. Уверенность — насколько вы уверены, что правильно выключили все 4 ручки/лампы?</span>
+        <span>1. Уверенность — насколько вы уверены, что правильно выключили все 4 элемента?</span>
         <span class="slider-val" id="val-conf1">50%</span>
       </div>
       <input type="range" min="0" max="100" value="50" oninput="updateSlider('conf1', this.value)">
@@ -206,7 +214,7 @@
 
     <div class="slider-box">
       <div class="slider-header">
-        <span>2. Яркость — насколько воспоминание о проверке яркое и четкое?</span>
+        <span>2. Яркость — насколько воспоминание о выключении четкое и ясное?</span>
         <span class="slider-val" id="val-vivid1">50%</span>
       </div>
       <input type="range" min="0" max="100" value="50" oninput="updateSlider('vivid1', this.value)">
@@ -214,19 +222,19 @@
 
     <div class="slider-box">
       <div class="slider-header">
-        <span>3. Детальность — насколько образ подробный (положение, щелчок, усилие)?</span>
+        <span>3. Детальность — насколько образ подробный (положение, щелчок, ощущение)?</span>
         <span class="slider-val" id="val-detail1">50%</span>
       </div>
       <input type="range" min="0" max="100" value="50" oninput="updateSlider('detail1', this.value)">
     </div>
 
-    <button class="btn" onclick="startManipulationPhase()">Перейти к серии проверок</button>
+    <button class="btn" onclick="startManipulationPhase()">Перейти к следующему этапу</button>
   </div>
 
   <!-- SCREEN 4: 12 КРУГОВ ПРОВЕРКИ -->
   <div id="screen-manip" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 style="margin:0;" id="manip-title">Серия проверок</h2>
+      <h2 style="margin:0;" id="manip-title">Серия рабочих проверок</h2>
       <span class="badge" id="round-badge">Круг 1 из 12</span>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="manip-progress"></div></div>
@@ -257,7 +265,7 @@
 
   <!-- SCREEN 5: ПРОВЕРКА 2 (КОНТРОЛЬНЫЙ ЗАМЕР) -->
   <div id="screen-check2" style="display:none;">
-    <h2>Проверка 2 (Контрольный замер)</h2>
+    <h2>Контрольное выключение</h2>
     <p>Завершающий контрольный замер. Коснитесь по очереди элементов 1, 2, 3, 4, чтобы установить их в заданное положение «ВЫКЛЮЧЕНО», и внимательно проверьте взглядом.</p>
     
     <div class="apparatus-panel">
@@ -269,7 +277,7 @@
 
   <!-- SCREEN 6: ШКАЛЫ МЕТАПАМЯТИ 2 -->
   <div id="screen-vas2" style="display:none;">
-    <h2>Оценки после контрольной проверки</h2>
+    <h2>Оценки восприятия 2</h2>
     <p>Оцените ваше субъективное восприятие прямо сейчас.</p>
 
     <div class="slider-box">
@@ -282,7 +290,7 @@
 
     <div class="slider-box">
       <div class="slider-header">
-        <span>2. Яркость — насколько воспоминание четкое и яркое?</span>
+        <span>2. Яркость — насколько воспоминание ясное и четкое?</span>
         <span class="slider-val" id="val-vivid2">50%</span>
       </div>
       <input type="range" min="0" max="100" value="50" oninput="updateSlider('vivid2', this.value)">
@@ -302,7 +310,7 @@
   <!-- SCREEN 7: ОБЪЕКТИВНЫЙ ТЕСТ ПАМЯТИ -->
   <div id="screen-accuracy" style="display:none;">
     <h2>Объективная проверка памяти</h2>
-    <p>Вспомните только что завершенную Проверку 2. В каком положении осталась ручка/лампа <b>№3</b>?</p>
+    <p>Вспомните только что завершенное выключение. В каком положении осталась ручка/лампа <b>№3</b>?</p>
 
     <div style="display:grid; gap:10px; margin:22px 0;">
       <button class="btn btn-secondary" onclick="recordAccuracy(true)">Вертикально (Выключено)</button>
@@ -312,9 +320,9 @@
     </div>
   </div>
 
-  <!-- SCREEN 8: ИТОГОВЫЙ ОТЧЕТ -->
+  <!-- SCREEN 8: ИТОГОВЫЙ ОТЧЕТ И НАУЧНЫЙ ДЕБРИФИНГ -->
   <div id="screen-report" style="display:none;">
-    <h2>Результаты эксперимента</h2>
+    <h2>Результаты и Научный дебрифинг</h2>
     <p style="margin-bottom:12px;">Участник <b id="rep-subj"></b> | Группа — <b id="rep-cond"></b></p>
 
     <div class="metric-row">
@@ -333,10 +341,15 @@
       <span class="metric-name">Объективная точность (Accuracy) —</span>
       <span class="metric-delta delta-up" id="rep-acc-val">100%</span>
     </div>
+    <div class="metric-row">
+      <span class="metric-name">Время выполнения теста —</span>
+      <span class="metric-delta delta-same" id="rep-time-val">0 сек</span>
+    </div>
 
     <div style="background:#0f172a; border-radius:12px; padding:14px; margin:16px 0; font-size:0.85rem; line-height:1.45; border-left:4px solid var(--accent); color:#cbd5e1;">
-      <b>Психологический вывод (van den Hout et al., 2003, 2019).</b><br>
-      Повторные компульсивные проверки <i>парадоксально разрушают метакогнитивную уверенность</i> в памяти и размывают перцептивный след. Объективная точность памяти не пострадала, но субъективное сомнение выросло! Это доказывает, что проверка сама по себе порождает потребность в новой проверке.
+      <b>Научный дебрифинг (van den Hout & Kindt, 2003; Radomsky et al., 2006).</b><br>
+      Истинная цель исследования была скрыта в начале, чтобы исключить внушение. Эксперимент изучает феномен <b>«недоверия к памяти» (memory distrust) при обсессивно-компульсивном расстройстве (ОКР)</b>.<br><br>
+      Повторные компульсивные проверки не улучшают уверенность, а <i>парадоксально разрушают метакогнитивное доверие</i> к своей памяти и размывают перцептивный след. Объективная точность сохраняется на 100%, но субъективное сомнение растет! Проверка сама по себе порождает потребность проверять снова.
     </div>
 
     <div id="save-status" style="font-size:0.82rem; text-align:center; color:var(--text-muted); margin-bottom:14px; min-height:24px;">
@@ -435,7 +448,11 @@
     round: 1,
     maxRounds: 12,
     checkedThisRound: [],
-    objAccuracy: true
+    objAccuracy: true,
+    startTime: null,
+    endTime: null,
+    durationSec: 0,
+    durationFormatted: ''
   };
 
   let globalLoadedData = [];
@@ -462,6 +479,7 @@
   function startFlow() {
     const code = document.getElementById('subj-code').value.trim();
     exp.subjId = code || 'S-' + Math.floor(100 + Math.random()*900);
+    exp.startTime = Date.now();
     
     const condSel = document.getElementById('condition-select').value;
     if (condSel === 'RANDOM') {
@@ -470,7 +488,7 @@
       exp.condition = condSel;
     }
 
-    document.getElementById('top-badge').innerText = exp.condition === 'STOVE' ? 'Группа А — Плита' : 'Группа Б — Лампы';
+    document.getElementById('top-badge').innerText = exp.condition === 'STOVE' ? 'Панель А — Газовая плита' : 'Панель Б — Световые индикаторы';
     setupCheck1();
   }
 
@@ -497,7 +515,7 @@
         const initialText = isCheck1 ? 'ГОРИТ' : 'ВЫКЛ';
         slot.innerHTML = `
           <div class="bulb ${initialLit}" id="${containerId}-bulb-${i}">💡</div>
-          <div class="slot-label">Лампа ${i}</div>
+          <div class="slot-label">Индикатор ${i}</div>
           <div class="slot-state" id="${containerId}-state-${i}">${initialText}</div>
         `;
       }
@@ -657,8 +675,16 @@
 
   async function finishExperiment() {
     showScreen('screen-report');
+    exp.endTime = Date.now();
+    const durationSec = Math.max(1, Math.round(((exp.endTime - (exp.startTime || exp.endTime)) / 1000)));
+    exp.durationSec = durationSec;
+    const mins = Math.floor(durationSec / 60);
+    const secs = durationSec % 60;
+    exp.durationFormatted = mins > 0 ? `${mins} мин ${secs} сек` : `${secs} сек`;
+    const durationShort = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
     document.getElementById('rep-subj').innerText = exp.subjId;
-    document.getElementById('rep-cond').innerText = exp.condition === 'STOVE' ? 'Газовая плита' : 'Световые лампы';
+    document.getElementById('rep-cond').innerText = exp.condition === 'STOVE' ? 'Газовая плита' : 'Световые индикаторы';
 
     const dConf = exp.post.conf - exp.pre.conf;
     const dVivid = exp.post.vivid - exp.pre.vivid;
@@ -670,11 +696,15 @@
 
     document.getElementById('rep-acc-val').innerText = exp.objAccuracy ? '100% (Верно)' : '0% (Ошибка)';
     document.getElementById('rep-acc-val').className = exp.objAccuracy ? 'metric-delta delta-up' : 'metric-delta delta-drop';
+    document.getElementById('rep-time-val').innerText = exp.durationFormatted;
 
     const payload = {
       subj_id: exp.subjId,
       condition: exp.condition,
-      condition_label: exp.condition === 'STOVE' ? 'Газовая плита' : 'Световые лампы',
+      condition_label: exp.condition === 'STOVE' ? 'Газовая плита' : 'Световые индикаторы',
+      duration_sec: durationSec,
+      duration_str: exp.durationFormatted,
+      duration_short: durationShort,
       pre_conf: exp.pre.conf,
       pre_vivid: exp.pre.vivid,
       pre_detail: exp.pre.detail,
@@ -766,7 +796,7 @@
     const dConf = exp.post.conf - exp.pre.conf;
     const dVivid = exp.post.vivid - exp.pre.vivid;
     const condName = exp.condition === 'STOVE' ? 'Плита' : 'Лампы';
-    const str = `Участник ${exp.subjId} | ${condName} | ΔУверенность: ${dConf > 0 ? '+' : ''}${dConf}% | ΔЯркость: ${dVivid > 0 ? '+' : ''}${dVivid}% | Точность: ${exp.objAccuracy ? '100%' : '0%'}`;
+    const str = `Участник ${exp.subjId} | ${condName} | Время: ${exp.durationFormatted} | ΔУверенность: ${dConf > 0 ? '+' : ''}${dConf}% | ΔЯркость: ${dVivid > 0 ? '+' : ''}${dVivid}% | Точность: ${exp.objAccuracy ? '100%' : '0%'}`;
     navigator.clipboard.writeText(str).then(() => {
       alert('Строка скопирована в буфер обмена!\n\n' + str + '\n\nТеперь ее можно вставить в чат или таблицу.');
     });
@@ -777,8 +807,8 @@
     const dVivid = exp.post.vivid - exp.pre.vivid;
     const dDetail = exp.post.detail - exp.pre.detail;
     const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + 
-      "Участник;Группа;Время;Уверенность_До;Уверенность_После;Дельта_Уверенность;Яркость_До;Яркость_После;Дельта_Яркость;Детали_До;Детали_После;Дельта_Детали;Точность\n" +
-      `"${exp.subjId}";"${exp.condition === 'STOVE' ? 'Газовая плита' : 'Световые лампы'}";"${new Date().toLocaleString('ru-RU')}";${exp.pre.conf};${exp.post.conf};${dConf};${exp.pre.vivid};${exp.post.vivid};${dVivid};${exp.pre.detail};${exp.post.detail};${dDetail};"${exp.objAccuracy ? '100%' : '0%'}"\n`;
+      "Участник;Группа;Время_сдачи;Длительность_сек;Уверенность_До;Уверенность_После;Дельта_Уверенность;Яркость_До;Яркость_После;Дельта_Яркость;Детали_До;Детали_После;Дельта_Детали;Точность\n" +
+      `"${exp.subjId}";"${exp.condition === 'STOVE' ? 'Газовая плита' : 'Световые индикаторы'}";"${new Date().toLocaleString('ru-RU')}";${exp.durationSec};${exp.pre.conf};${exp.post.conf};${dConf};${exp.pre.vivid};${exp.post.vivid};${dVivid};${exp.pre.detail};${exp.post.detail};${dDetail};"${exp.objAccuracy ? '100%' : '0%'}"\n`;
     const link = document.createElement("a");
     link.setAttribute("href", encodeURI(csvContent));
     link.setAttribute("download", `result_${exp.subjId}.csv`);
@@ -804,7 +834,6 @@
   function toggleAdminPanel() {
     showScreen('screen-admin');
     
-    // Configure public link and QR
     const publicUrl = 'https://jkellydigital-commits.github.io/stove-test/';
     const linkEl = document.getElementById('mobile-url-link');
     const qrEl = document.getElementById('qr-img');
@@ -881,6 +910,7 @@
 
     let stoveConfDeltas = [], bulbConfDeltas = [];
     let stoveVividDeltas = [], bulbVividDeltas = [];
+    let totalDurations = [];
     let correctCount = 0;
 
     data.forEach(item => {
@@ -896,7 +926,10 @@
         bulbVividDeltas.push(dVivid);
       }
 
+      if (item.duration_sec) totalDurations.push(item.duration_sec);
       if (item.obj_accuracy === '100%' || item.obj_accuracy === true) correctCount++;
+
+      const durText = item.duration_short || (item.duration_sec ? `${item.duration_sec}с` : '—');
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -905,7 +938,7 @@
         <td style="color:${dConf < 0 ? '#f87171' : '#34d399'}; font-weight:bold;">${dConf > 0 ? '+' : ''}${dConf}%</td>
         <td style="color:${dVivid < 0 ? '#f87171' : '#34d399'}">${dVivid > 0 ? '+' : ''}${dVivid}%</td>
         <td>${item.obj_accuracy || '100%'}</td>
-        <td style="font-size:0.7rem; color:#94a3b8;">${item.timestamp || '—'}</td>
+        <td style="font-size:0.75rem; color:#94a3b8;">${durText}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -916,10 +949,13 @@
     const avgStoveVivid = stoveVividDeltas.length ? (stoveVividDeltas.reduce((a,b)=>a+b,0)/stoveVividDeltas.length).toFixed(1) : 'Н/Д';
     const avgBulbVivid = bulbVividDeltas.length ? (bulbVividDeltas.reduce((a,b)=>a+b,0)/bulbVividDeltas.length).toFixed(1) : 'Н/Д';
 
+    const avgDuration = totalDurations.length ? Math.round(totalDurations.reduce((a,b)=>a+b,0)/totalDurations.length) : null;
+    const avgDurationText = avgDuration ? `${Math.floor(avgDuration/60)} мин ${avgDuration%60} сек` : 'Н/Д';
+
     const accPct = Math.round((correctCount / data.length) * 100);
 
     document.getElementById('admin-summary-box').innerHTML = `
-      <b>Всего участников в базе —</b> ${data.length} чел. (Точность памяти: <b>${accPct}%</b>)<br><br>
+      <b>Всего участников в базе —</b> ${data.length} чел. (Точность памяти: <b>${accPct}%</b> | Ср. время: <b>${avgDurationText}</b>)<br><br>
       <b>Среднее падение уверенности в памяти (Δ Confidence) —</b><br>
       • Группа «Плита» (N=${stoveConfDeltas.length}) — <b style="color:#f87171; font-size:1.05rem;">${avgStoveConf}%</b> (разрушение уверенности)<br>
       • Группа «Лампы» (N=${bulbConfDeltas.length}) — <b style="color:#60a5fa; font-size:1.05rem;">${avgBulbConf}%</b> (контрольная группа)<br><br>
@@ -940,6 +976,7 @@
       "Код_участника",
       "Группа",
       "Время_сдачи",
+      "Длительность_сек",
       "Уверенность_До",
       "Уверенность_После",
       "Дельта_Уверенность",
@@ -959,12 +996,13 @@
       const dConf = (row.delta_conf !== undefined) ? row.delta_conf : ((row.post_conf || 0) - (row.pre_conf || 0));
       const dVivid = (row.delta_vivid !== undefined) ? row.delta_vivid : ((row.post_vivid || 0) - (row.pre_vivid || 0));
       const dDetail = (row.delta_detail !== undefined) ? row.delta_detail : ((row.post_detail || 0) - (row.pre_detail || 0));
-      const cond = (row.condition === 'STOVE' || (row.condition_label && row.condition_label.includes('плит'))) ? 'Газовая плита' : 'Световые лампы';
+      const cond = (row.condition === 'STOVE' || (row.condition_label && row.condition_label.includes('плит'))) ? 'Газовая плита' : 'Световые индикаторы';
 
       const values = [
         `"${row.subj_id || ''}"`,
         `"${cond}"`,
         `"${row.timestamp || ''}"`,
+        row.duration_sec !== undefined ? row.duration_sec : '',
         row.pre_conf !== undefined ? row.pre_conf : '',
         row.post_conf !== undefined ? row.post_conf : '',
         dConf,
