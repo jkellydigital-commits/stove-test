@@ -152,8 +152,8 @@
 
 <div class="container">
   <div class="top-bar">
-    <span class="badge" id="top-badge">НГУ · Лаборатория психологии</span>
-    <span class="admin-link" onclick="toggleAdminPanel()">📊 Сводка группы</span>
+    <span class="badge" id="top-badge" style="display:none;"></span>
+    <span class="admin-link" onclick="toggleAdminPanel()">📊 Сводка</span>
   </div>
 
   <!-- SCREEN 1: ВВЕДЕНИЕ (Чистая нейтральная инструкция без подсказки гипотезы) -->
@@ -362,13 +362,13 @@
 
   <!-- SCREEN 9: ПАНЕЛЬ ПРЕПОДАВАТЕЛЯ / СВОДКА ГРУППЫ -->
   <div id="screen-admin" style="display:none;">
-    <h2>Панель преподавателя (Сводка группы)</h2>
-    <p>Агрегированные данные студентов для демонстрации на экране</p>
+    <h2>Панель исследователя (Сводка данных)</h2>
+    <p>Агрегированные данные участников для анализа и демонстрации на экране</p>
 
     <!-- QR Code for mobile connection -->
     <div style="background:#0f172a; border:1px solid rgba(96,165,250,0.3); border-radius:14px; padding:16px; margin-bottom:16px; text-align:center;">
-      <div style="font-size:0.95rem; font-weight:700; color:#60a5fa; margin-bottom:4px;">📲 Ссылка для студентов с телефонов</div>
-      <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:10px;">Студенты могут навести камеру смартфона на этот QR-код.</div>
+      <div style="font-size:0.95rem; font-weight:700; color:#60a5fa; margin-bottom:4px;">📲 Ссылка для участников</div>
+      <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:10px;">Участники могут навести камеру смартфона на этот QR-код.</div>
       <div style="margin: 0 auto 10px auto; width:150px; height:150px; background:white; padding:6px; border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
         <img id="qr-img" src="" alt="QR код для телефона" style="width:100%; height:100%;">
       </div>
@@ -488,7 +488,7 @@
       exp.condition = condSel;
     }
 
-    document.getElementById('top-badge').innerText = exp.condition === 'STOVE' ? 'Панель А — Газовая плита' : 'Панель Б — Световые индикаторы';
+    const b = document.getElementById('top-badge'); b.innerText = exp.condition === 'STOVE' ? 'Панель А — Газовая плита' : 'Панель Б — Световые индикаторы'; b.style.display = 'inline-block';
     setupCheck1();
   }
 
@@ -726,7 +726,7 @@
     } catch(e){}
 
     const statusEl = document.getElementById('save-status');
-    statusEl.innerHTML = '⏳ Отправка результата в базу преподавателя...';
+    statusEl.innerHTML = '⏳ Отправка результата в базу исследователя...';
 
     // 1. Direct submit to GitHub repo
     let savedToCloud = false;
@@ -751,7 +751,7 @@
       });
       if (res.ok) {
         savedToCloud = true;
-        statusEl.innerHTML = '✓ Результат успешно отправлен в облако преподавателя (GitHub)!';
+        statusEl.innerHTML = '✓ Результат успешно отправлен в базу данных исследователя (GitHub)!';
         statusEl.style.color = '#34d399';
       }
     } catch(err) {
