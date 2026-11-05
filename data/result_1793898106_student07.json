@@ -1,0 +1,16 @@
+{
+  "subj_id": "Студент-07",
+  "condition": "STOVE",
+  "condition_label": "Газовая плита",
+  "pre_conf": 90,
+  "post_conf": 65,
+  "delta_conf": -25,
+  "pre_vivid": 85,
+  "post_vivid": 60,
+  "delta_vivid": -25,
+  "pre_detail": 80,
+  "post_detail": 55,
+  "delta_detail": -25,
+  "obj_accuracy": "100%",
+  "timestamp": "05.11.2026, 12:00:00"
+}
