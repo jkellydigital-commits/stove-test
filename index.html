@@ -153,7 +153,7 @@
 <div class="container">
   <div class="top-bar">
     <span class="badge" id="top-badge" style="display:none;"></span>
-    <span class="admin-link" onclick="toggleAdminPanel()">📊 Сводка</span>
+    <span class="admin-link" id="admin-link-btn" onclick="toggleAdminPanel()">📊 Сводка</span>
   </div>
 
   <!-- SCREEN 1: ВВЕДЕНИЕ (Чистая нейтральная инструкция без подсказки гипотезы) -->
@@ -322,7 +322,7 @@
 
   <!-- SCREEN 8: ИТОГОВЫЙ ОТЧЕТ И НАУЧНЫЙ ДЕБРИФИНГ -->
   <div id="screen-report" style="display:none;">
-    <h2>Результаты и Научный дебрифинг</h2>
+    <h2>Результаты и обсуждение эксперимента</h2>
     <p style="margin-bottom:12px;">Участник <b id="rep-subj"></b> | Группа — <b id="rep-cond"></b></p>
 
     <div class="metric-row">
@@ -347,9 +347,9 @@
     </div>
 
     <div style="background:#0f172a; border-radius:12px; padding:14px; margin:16px 0; font-size:0.85rem; line-height:1.45; border-left:4px solid var(--accent); color:#cbd5e1;">
-      <b>Научный дебрифинг (van den Hout & Kindt, 2003; Radomsky et al., 2006).</b><br>
-      Истинная цель исследования была скрыта в начале, чтобы исключить внушение. Эксперимент изучает феномен <b>«недоверия к памяти» (memory distrust) при обсессивно-компульсивном расстройстве (ОКР)</b>.<br><br>
-      Повторные компульсивные проверки не улучшают уверенность, а <i>парадоксально разрушают метакогнитивное доверие</i> к своей памяти и размывают перцептивный след. Объективная точность сохраняется на 100%, но субъективное сомнение растет! Проверка сама по себе порождает потребность проверять снова.
+      <b>Обсуждение результатов (van den Hout & Kindt, 2003; Radomsky et al., 2006) —</b><br>
+      Истинная цель исследования была скрыта в начале, чтобы исключить внушение. Эксперимент изучает феномен <b>«недоверия к памяти» (memory distrust) при тревоге и частых проверках (модель ОКР)</b>.<br><br>
+      Повторные проверки не улучшают уверенность, а <i>парадоксально разрушают метакогнитивное доверие</i> к своей памяти и размывают перцептивный след. Объективная точность сохраняется на 100%, но субъективное сомнение растет! Проверка сама по себе порождает потребность проверять снова.
     </div>
 
     <div id="save-status" style="font-size:0.82rem; text-align:center; color:var(--text-muted); margin-bottom:14px; min-height:24px;">
@@ -473,6 +473,17 @@
       const el = document.getElementById(s);
       if (el) el.style.display = (s === screenId) ? 'block' : 'none';
     });
+
+    // Показываем кнопку «Сводка» ТОЛЬКО на 1-м экране (вход) и на последнем (результаты)
+    const adminBtn = document.getElementById('admin-link-btn');
+    if (adminBtn) {
+      if (screenId === 'screen-intro' || screenId === 'screen-report') {
+        adminBtn.style.display = 'inline-block';
+      } else {
+        adminBtn.style.display = 'none';
+      }
+    }
+
     window.scrollTo(0, 0);
   }
 
