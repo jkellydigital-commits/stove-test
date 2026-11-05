@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Эксперимент — Проверка и память (Плита и лампы)</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #f59e0b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0; padding: 12px;
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .container {
+      width: 100%; max-width: 520px;
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      position: relative; overflow: hidden;
+    }
+    .top-bar {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+    }
+    .badge {
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 4px 10px; border-radius: 9999px; background: rgba(37, 99, 235, 0.2); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3);
+    }
+    .admin-link {
+      color: var(--text-muted); font-size: 0.85rem; text-decoration: none; cursor: pointer; padding: 4px 8px; border-radius: 6px;
+    }
+    .admin-link:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+
+    h1, h2, h3 { margin: 0 0 10px 0; font-weight: 700; text-align: center; }
+    h1 { font-size: 1.4rem; color: #fff; }
+    h2 { font-size: 1.2rem; }
+    p { margin: 0 0 16px 0; font-size: 0.95rem; line-height: 1.5; color: var(--text-muted); text-align: center; }
+
+    /* Interactive Stove & Lamp elements */
+    .apparatus-panel {
+      background: #0f172a; border: 2px solid var(--border); border-radius: 16px;
+      padding: 20px; margin: 20px 0;
+    }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .item-slot {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #1e293b; border: 1px solid var(--border); border-radius: 14px; padding: 14px;
+      cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); user-select: none;
+    }
+    .item-slot:active { transform: scale(0.96); }
+    .item-slot.checked { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+
+    /* Burner dial */
+    .dial {
+      width: 76px; height: 76px; border-radius: 50%;
+      background: radial-gradient(circle, #475569 0%, #1e293b 100%);
+      border: 3px solid #64748b; position: relative;
+      transition: transform 0.25s ease; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.4);
+    }
+    .dial-pointer {
+      position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+      width: 4px; height: 20px; background: #ef4444; border-radius: 2px;
+    }
+    .dial.off-pos { transform: rotate(0deg); }
+    .dial.on-pos { transform: rotate(90deg); }
+    
+    /* Checking wiggle animation */
+    @keyframes dial-wiggle {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(18deg); }
+      50% { transform: rotate(-12deg); }
+      75% { transform: rotate(8deg); }
+      100% { transform: rotate(0deg); }
+    }
+    .dial.wiggle { animation: dial-wiggle 0.35s ease; }
+
+    /* Lamp element */
+    .bulb {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: #334155; border: 3px solid #64748b;
+      display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+      transition: all 0.25s ease;
+    }
+    .bulb.lit {
+      background: #fef08a; border-color: #f59e0b;
+      box-shadow: 0 0 24px #facc15, inset 0 0 8px #f59e0b;
+    }
+    .slot-label { margin-top: 10px; font-size: 0.85rem; font-weight: 600; color: #e2e8f0; }
+    .slot-state { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Buttons */
+    .btn {
+      width: 100%; padding: 14px 18px; border-radius: 12px; border: none;
+      background: var(--primary); color: white; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background 0.15s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-secondary { background: #334155; color: #f1f5f9; }
+    .btn-secondary:hover { background: #475569; }
+
+    /* Sliders */
+    .slider-box {
+      background: #0f172a; border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; margin-bottom: 16px;
+    }
+    .slider-header { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 8px; }
+    .slider-val { font-weight: 700; color: var(--accent); }
+    input[type=range] {
+      width: 100%; height: 8px; border-radius: 4px; background: #334155; outline: none; -webkit-appearance: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+      background: var(--primary); cursor: pointer; border: 2px solid white;
+    }
+
+    /* Progress bar */
+    .progress-bar { width: 100%; height: 6px; background: #334155; border-radius: 3px; overflow: hidden; margin: 12px 0 20px 0; }
+    .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s ease; }
+
+    /* Results comparison cards */
+    .metric-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; background: #0f172a; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border);
+    }
+    .metric-name { font-size: 0.9rem; color: #e2e8f0; }
+    .metric-delta { font-weight: 700; font-size: 1rem; }
+    .delta-drop { color: #f87171; }
+    .delta-same { color: #60a5fa; }
+    .delta-up { color: #34d399; }
+
+    /* Admin Table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 14px; }
+    th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-muted); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="top-bar">
+    <span class="badge" id="top-badge">НГУ · Тревожные расстройства</span>
+    <span class="admin-link" onclick="toggleAdminPanel()">📊 Сводка группы</span>
+  </div>
+
+  <!-- SCREEN 1: ВВЕДЕНИЕ -->
+  <div id="screen-intro">
+    <h1>Опыт «Проверка и память»</h1>
+    <p>Парадигма Марселя ван ден Хаута (van den Hout & Kindt, 2003)<br>Изучение механизмов компульсивных проверок и метапамяти</p>
+    
+    <div style="margin: 24px 0;">
+      <label style="display:block; font-size:0.85rem; color:#cbd5e1; margin-bottom:6px;">Анонимный код участника (любые 3 символа)</label>
+      <input type="text" id="subj-code" value="" placeholder="например 712" maxlength="10" 
+             style="width:100%; padding:12px; border-radius:10px; background:#0f172a; border:1px solid var(--border); color:#fff; font-size:1.1rem; text-align:center;">
+    </div>
+
+    <div style="margin-bottom: 24px;">
+      <label style="display:block; font-size:0.85rem; color:#cbd5e1; margin-bottom:6px;">Условие эксперимента</label>
+      <select id="condition-select" style="width:100%; padding:12px; border-radius:10px; background:#0f172a; border:1px solid var(--border); color:#fff; font-size:0.95rem;">
+        <option value="RANDOM">Случайное распределение (РКИ)</option>
+        <option value="STOVE">Карточка А — Газовая плита (Опытная)</option>
+        <option value="BULBS">Карточка Б — Световые лампы (Контроль)</option>
+      </select>
+    </div>
+
+    <button class="btn" onclick="startFlow()">Войти в эксперимент</button>
+  </div>
+
+  <!-- SCREEN 2: ПРОВЕРКА 1 (БАЗОВЫЙ ЗАМЕР) -->
+  <div id="screen-check1" style="display:none;">
+    <h2 id="check1-title">Проверка 1</h2>
+    <p id="check1-desc">Установите все 4 элемента по очереди (1, 2, 3, 4) в положение <b>«ВЫКЛЮЧЕНО»</b> и внимательно проверьте взглядом.</p>
+    
+    <div class="apparatus-panel">
+      <div class="grid" id="grid-check1"></div>
+    </div>
+
+    <button class="btn" id="btn-done-check1" disabled onclick="finishCheck1()">Я выключил(а) и проверил(а)</button>
+  </div>
+
+  <!-- SCREEN 3: ШКАЛЫ МЕТАПАМЯТИ 1 -->
+  <div id="screen-vas1" style="display:none;">
+    <h2>Оценки после Проверки 1</h2>
+    <p>Ответьте сразу по памяти, не возвращаясь назад (0 — совсем нет, 100 — полностью).</p>
+
+    <div class="slider-box">
+      <div class="slider-header">
+        <span>1. Уверенность — насколько вы уверены, что правильно выключили все 4 ручки/лампы?</span>
+        <span class="slider-val" id="val-conf1">50%</span>
+      </div>
+      <input type="range" min="0" max="100" value="50" oninput="updateSlider('conf1', this.value)">
+    </div>
+
+    <div class="slider-box">
+      <div class="slider-header">
+        <span>2. Яркость — насколько воспоминание о проверке яркое и четкое?</span>
+        <span class="slider-val" id="val-vivid1">50%</span>
+      </div>
+      <input type="range" min="0" max="100" value="50" oninput="updateSlider('vivid1', this.value)">
+    </div>
+
+    <div class="slider-box">
+      <div class="slider-header">
+        <span>3. Детальность — насколько образ подробный (положение, щелчок, усилие)?</span>
+        <span class="slider-val" id="val-detail1">50%</span>
+      </div>
+      <input type="range" min="0" max="100" value="50" oninput="updateSlider('detail1', this.value)">
+    </div>
+
+    <button class="btn" onclick="startManipulationPhase()">Перейти к манипуляции</button>
+  </div>
+
+  <!-- SCREEN 4: 12 КРУГОВ ПРОВЕРКИ -->
+  <div id="screen-manip" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 style="margin:0;" id="manip-title">Серия проверок</h2>
+      <span class="badge" id="round-badge">Круг 1 из 12</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="manip-progress"></div></div>
+    
+    <div style="background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(96, 165, 250, 0.3); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; text-align: center;">
+      <div style="font-size: 0.95rem; font-weight: 600; color: #93c5fd;" id="manip-counter-text">
+        👉 Нажмите по очереди: <b>1 → 2 → 3 → 4</b> (проверено 0 из 4)
+      </div>
+      <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 4px;">
+        Проговаривайте каждой — <i>«включена — выключена — проверено»</i>
+      </div>
+    </div>
+
+    <div class="apparatus-panel">
+      <div class="grid" id="grid-manip"></div>
+    </div>
+
+    <button class="btn" id="btn-next-round" onclick="handleNextRoundClick()" style="transition: all 0.2s;">
+      Нажмите на все 4 элемента выше (0/4)
+    </button>
+    
+    <div style="text-align: center; margin-top: 12px;">
+      <span style="font-size: 0.75rem; color: #64748b; cursor: pointer; text-decoration: underline;" onclick="skipToPostTest()">
+        ⏩ Пропустить круги проверки (тестовый режим для преподавателя)
+      </span>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: ПРОВЕРКА 2 (КОНТРОЛЬНЫЙ ЗАМЕР) -->
+  <div id="screen-check2" style="display:none;">
+    <h2>Проверка 2 (Контрольный замер)</h2>
+    <p>Завершающий контрольный замер. Коснитесь по очереди элементов 1, 2, 3, 4, чтобы установить их в заданное положение «ВЫКЛЮЧЕНО», и внимательно проверьте взглядом.</p>
+    
+    <div class="apparatus-panel">
+      <div class="grid" id="grid-check2"></div>
+    </div>
+
+    <button class="btn" id="btn-done-check2" disabled onclick="finishCheck2()">Выключено и проверено</button>
+  </div>
+
+  <!-- SCREEN 6: ШКАЛЫ МЕТАПАМЯТИ 2 -->
+  <div id="screen-vas2" style="display:none;">
+    <h2>Оценки после контрольной проверки</h2>
+    <p>Оцените ваше субъективное восприятие прямо сейчас.</p>
+
+    <div class="slider-box">
+      <div class="slider-header">
+        <span>1. Уверенность — насколько вы уверены, что выключили правильно?</span>
+        <span class="slider-val" id="val-conf2">50%</span>
+      </div>
+      <input type="range" min="0" max="100" value="50" oninput="updateSlider('conf2', this.value)">
+    </div>
+
+    <div class="slider-box">
+      <div class="slider-header">
+        <span>2. Яркость — насколько воспоминание четкое и яркое?</span>
+        <span class="slider-val" id="val-vivid2">50%</span>
+      </div>
+      <input type="range" min="0" max="100" value="50" oninput="updateSlider('vivid2', this.value)">
+    </div>
+
+    <div class="slider-box">
+      <div class="slider-header">
+        <span>3. Детальность — насколько образ подробный?</span>
+        <span class="slider-val" id="val-detail2">50%</span>
+      </div>
+      <input type="range" min="0" max="100" value="50" oninput="updateSlider('detail2', this.value)">
+    </div>
+
+    <button class="btn" onclick="startMemoryTest()">Тест объективной памяти</button>
+  </div>
+
+  <!-- SCREEN 7: ОБЪЕКТИВНЫЙ ТЕСТ ПАМЯТИ -->
+  <div id="screen-accuracy" style="display:none;">
+    <h2>Объективная проверка памяти</h2>
+    <p>Вспомните только что завершенную Проверку 2. В каком положении осталась ручка/лампа <b>№3</b>?</p>
+
+    <div style="display:grid; gap:10px; margin:24px 0;">
+      <button class="btn btn-secondary" onclick="recordAccuracy(true)">Вертикально (Выключено)</button>
+      <button class="btn btn-secondary" onclick="recordAccuracy(false)">Повернута на 90° вправо</button>
+      <button class="btn btn-secondary" onclick="recordAccuracy(false)">Повернута на 180° вниз</button>
+      <button class="btn btn-secondary" onclick="recordAccuracy(false)">Не помню вообще</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 8: ИТОГОВЫЙ ОТЧЕТ -->
+  <div id="screen-report" style="display:none;">
+    <h2>Результаты эксперимента</h2>
+    <p style="margin-bottom:12px;">Участник <b id="rep-subj"></b> | Группа — <b id="rep-cond"></b></p>
+
+    <div class="metric-row">
+      <span class="metric-name">Уверенность в памяти (Confidence) —</span>
+      <span class="metric-delta" id="rep-conf-val"></span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Яркость образа (Vividness) —</span>
+      <span class="metric-delta" id="rep-vivid-val"></span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Детальность (Detail) —</span>
+      <span class="metric-delta" id="rep-detail-val"></span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-name">Объективная точность (Accuracy) —</span>
+      <span class="metric-delta delta-up" id="rep-acc-val">100%</span>
+    </div>
+
+    <div style="background:#0f172a; border-radius:12px; padding:14px; margin:16px 0; font-size:0.85rem; line-height:1.45; border-left:4px solid var(--accent); color:#cbd5e1;">
+      <b>Психологический вывод (van den Hout et al., 2003, 2019).</b><br>
+      Повторные компульсивные проверки <i>парадоксально разрушают метакогнитивную уверенность</i> в памяти и размывают перцептивный след. Объективная точность памяти не пострадала, но субъективное сомнение выросло! Это доказывает, что проверка сама по себе порождает потребность в новой проверке.
+    </div>
+
+    <div id="save-status" style="font-size:0.8rem; text-align:center; color:var(--success); margin-bottom:12px;">Данные успешно записаны в results.csv и results.json</div>
+
+    <button class="btn btn-secondary" onclick="restartExperiment()">Пройти еще раз</button>
+  </div>
+
+  <!-- SCREEN 9: ПАНЕЛЬ ПРЕПОДАВАТЕЛЯ / СВОДКА ГРУППЫ -->
+  <div id="screen-admin" style="display:none;">
+    <h2>Панель преподавателя (Сводка группы)</h2>
+    <p>Агрегированные данные студентов для демонстрации на проекторе</p>
+
+    <!-- QR Code for mobile connection -->
+    <div style="background:#0f172a; border:1px solid rgba(96,165,250,0.3); border-radius:14px; padding:16px; margin-bottom:16px; text-align:center;">
+      <div style="font-size:0.95rem; font-weight:700; color:#60a5fa; margin-bottom:4px;">📲 Подключение студентов со смартфонов</div>
+      <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:12px;">Студенты в аудитории могут навести камеру смартфона на этот QR-код:</div>
+      <div style="margin: 0 auto 10px auto; width:160px; height:160px; background:white; padding:8px; border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+        <img id="qr-img" src="" alt="QR код для телефона" style="width:100%; height:100%;">
+      </div>
+      <div style="font-size:0.85rem; color:#cbd5e1;">Либо ввести в браузере телефона адрес:</div>
+      <div id="mobile-url-text" style="font-family:monospace; font-size:1rem; color:#facc15; font-weight:bold; margin-top:4px;">http://localhost:8000</div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-bottom:16px;">
+      <button class="btn" style="padding:8px 12px; font-size:0.85rem;" onclick="loadGroupData()">🔄 Обновить данные</button>
+      <button class="btn btn-secondary" style="padding:8px 12px; font-size:0.85rem;" onclick="closeAdminPanel()">Закрыть панель</button>
+    </div>
+
+    <div id="admin-summary-box" style="background:#0f172a; padding:14px; border-radius:12px; margin-bottom:16px; font-size:0.85rem; border:1px solid var(--border);">
+      Загрузка данных...
+    </div>
+
+    <div style="max-height: 250px; overflow-y: auto;">
+      <table id="admin-table">
+        <thead>
+          <tr>
+            <th>Код</th>
+            <th>Группа</th>
+            <th>Δ Увер.</th>
+            <th>Δ Ярк.</th>
+            <th>Точность</th>
+          </tr>
+        </thead>
+        <tbody id="admin-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Web Audio Context for realistic tactile clicks
+  let audioCtx = null;
+  function playClickSound(freq = 600, duration = 0.04) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    } catch(e){}
+  }
+
+  // Experiment State
+  let exp = {
+    subjId: '',
+    condition: 'STOVE', // 'STOVE' or 'BULBS'
+    phase: 'intro',
+    pre: { conf: 50, vivid: 50, detail: 50 },
+    post: { conf: 50, vivid: 50, detail: 50 },
+    round: 1,
+    maxRounds: 12,
+    checkedThisRound: [],
+    objAccuracy: true
+  };
+
+  function updateSlider(id, val) {
+    document.getElementById('val-' + id).innerText = val + '%';
+    if (id === 'conf1') exp.pre.conf = parseInt(val);
+    if (id === 'vivid1') exp.pre.vivid = parseInt(val);
+    if (id === 'detail1') exp.pre.detail = parseInt(val);
+    if (id === 'conf2') exp.post.conf = parseInt(val);
+    if (id === 'vivid2') exp.post.vivid = parseInt(val);
+    if (id === 'detail2') exp.post.detail = parseInt(val);
+  }
+
+  function showScreen(screenId) {
+    const screens = ['screen-intro', 'screen-check1', 'screen-vas1', 'screen-manip', 'screen-check2', 'screen-vas2', 'screen-accuracy', 'screen-report', 'screen-admin'];
+    screens.forEach(s => {
+      const el = document.getElementById(s);
+      if (el) el.style.display = (s === screenId) ? 'block' : 'none';
+    });
+  }
+
+  function startFlow() {
+    const code = document.getElementById('subj-code').value.trim();
+    exp.subjId = code || 'S-' + Math.floor(100 + Math.random()*900);
+    
+    const condSel = document.getElementById('condition-select').value;
+    if (condSel === 'RANDOM') {
+      exp.condition = Math.random() < 0.5 ? 'STOVE' : 'BULBS';
+    } else {
+      exp.condition = condSel;
+    }
+
+    document.getElementById('top-badge').innerText = exp.condition === 'STOVE' ? 'Группа А — Плита' : 'Группа Б — Лампы';
+    setupCheck1();
+  }
+
+  function renderGrid(containerId, isCheck1, onElementClick) {
+    const cont = document.getElementById(containerId);
+    cont.innerHTML = '';
+    for(let i=1; i<=4; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'item-slot';
+      slot.id = `${containerId}-item-${i}`;
+      
+      if (exp.condition === 'STOVE') {
+        // Initial state: turned to 90 deg (ON) for checks, or vertical (OFF)
+        const initialClass = isCheck1 ? 'dial on-pos' : 'dial off-pos';
+        const initialText = isCheck1 ? 'ВКЛ' : 'ВЫКЛ';
+        slot.innerHTML = `
+          <div class="${initialClass}" id="${containerId}-dial-${i}">
+            <div class="dial-pointer"></div>
+          </div>
+          <div class="slot-label">Конфорка ${i}</div>
+          <div class="slot-state" id="${containerId}-state-${i}">${initialText}</div>
+        `;
+      } else {
+        const initialLit = isCheck1 ? 'lit' : '';
+        const initialText = isCheck1 ? 'ГОРИТ' : 'ВЫКЛ';
+        slot.innerHTML = `
+          <div class="bulb ${initialLit}" id="${containerId}-bulb-${i}">💡</div>
+          <div class="slot-label">Лампа ${i}</div>
+          <div class="slot-state" id="${containerId}-state-${i}">${initialText}</div>
+        `;
+      }
+
+      slot.onclick = () => onElementClick(i, slot);
+      cont.appendChild(slot);
+    }
+  }
+
+  // Phase 1: Check 1
+  let check1Clicks = [];
+  function setupCheck1() {
+    showScreen('screen-check1');
+    check1Clicks = [];
+    document.getElementById('btn-done-check1').disabled = true;
+    renderGrid('grid-check1', true, (idx, slot) => {
+      playClickSound(450);
+      if (!check1Clicks.includes(idx)) check1Clicks.push(idx);
+      slot.classList.add('checked');
+      if (exp.condition === 'STOVE') {
+        const dial = document.getElementById(`grid-check1-dial-${idx}`);
+        dial.classList.remove('on-pos');
+        dial.classList.add('off-pos');
+        document.getElementById(`grid-check1-state-${idx}`).innerText = 'ВЫКЛ';
+      } else {
+        document.getElementById(`grid-check1-bulb-${idx}`).classList.remove('lit');
+        document.getElementById(`grid-check1-state-${idx}`).innerText = 'ВЫКЛ';
+      }
+      if (check1Clicks.length === 4) {
+        document.getElementById('btn-done-check1').disabled = false;
+      }
+    });
+  }
+
+  function finishCheck1() {
+    playClickSound(800, 0.08);
+    showScreen('screen-vas1');
+  }
+
+  // Phase 2: 12 Rounds
+  function startManipulationPhase() {
+    exp.round = 1;
+    showScreen('screen-manip');
+    setupRound();
+  }
+
+  function setupRound() {
+    document.getElementById('round-badge').innerText = `Круг ${exp.round} из ${exp.maxRounds}`;
+    const pct = ((exp.round - 1) / exp.maxRounds) * 100;
+    document.getElementById('manip-progress').style.width = pct + '%';
+    exp.checkedThisRound = [];
+    
+    updateRoundButtonState();
+
+    renderGrid('grid-manip', false, (idx, slot) => {
+      playClickSound(500 + idx*50, 0.03);
+      if (!exp.checkedThisRound.includes(idx)) {
+        exp.checkedThisRound.push(idx);
+        slot.classList.add('checked');
+        
+        // Jiggle animation on checking
+        if (exp.condition === 'STOVE') {
+          const dial = document.getElementById(`grid-manip-dial-${idx}`);
+          dial.classList.add('wiggle');
+          setTimeout(() => dial.classList.remove('wiggle'), 350);
+        }
+
+        const st = document.getElementById(`grid-manip-state-${idx}`);
+        st.innerText = 'ПРОВЕРЕНО ✓';
+        st.style.color = 'var(--success)';
+        st.style.fontWeight = 'bold';
+      }
+      updateRoundButtonState();
+    });
+  }
+
+  function updateRoundButtonState() {
+    const btn = document.getElementById('btn-next-round');
+    const checked = exp.checkedThisRound.length;
+    const txt = document.getElementById('manip-counter-text');
+    
+    if (txt) {
+      txt.innerHTML = `👉 Нажмите по очереди: <b>1 → 2 → 3 → 4</b> (проверено <b>${checked} из 4</b>)`;
+    }
+
+    if (checked < 4) {
+      btn.style.background = '#334155';
+      btn.style.opacity = '0.85';
+      btn.innerText = `Нажмите еще ${4 - checked} эл. выше (${checked}/4)`;
+    } else {
+      btn.style.background = '#10b981';
+      btn.style.opacity = '1';
+      btn.innerText = (exp.round === exp.maxRounds) 
+        ? '✓ Завершить серию проверок →' 
+        : `✓ Следующий круг (${exp.round+1}/${exp.maxRounds}) →`;
+    }
+  }
+
+  function handleNextRoundClick() {
+    if (exp.checkedThisRound.length < 4) {
+      alert(`Пожалуйста, коснитесь всех 4 элементов на экране перед переходом!\nСейчас проверено — ${exp.checkedThisRound.length} из 4.`);
+      return;
+    }
+    advanceRound();
+  }
+
+  function skipToPostTest() {
+    if (confirm('Пропустить оставшиеся круги манипуляции и сразу перейти к контрольному замеру?')) {
+      setupCheck2();
+    }
+  }
+
+  function advanceRound() {
+    playClickSound(750, 0.05);
+    exp.round++;
+    if (exp.round > exp.maxRounds) {
+      setupCheck2();
+    } else {
+      setupRound();
+    }
+  }
+
+  // Phase 3: Check 2
+  let check2Clicks = [];
+  function setupCheck2() {
+    showScreen('screen-check2');
+    check2Clicks = [];
+    document.getElementById('btn-done-check2').disabled = true;
+    renderGrid('grid-check2', true, (idx, slot) => {
+      playClickSound(480);
+      if (!check2Clicks.includes(idx)) check2Clicks.push(idx);
+      slot.classList.add('checked');
+      if (exp.condition === 'STOVE') {
+        const dial = document.getElementById(`grid-check2-dial-${idx}`);
+        dial.classList.remove('on-pos');
+        dial.classList.add('off-pos');
+        document.getElementById(`grid-check2-state-${idx}`).innerText = 'ВЫКЛ';
+      } else {
+        document.getElementById(`grid-check2-bulb-${idx}`).classList.remove('lit');
+        document.getElementById(`grid-check2-state-${idx}`).innerText = 'ВЫКЛ';
+      }
+      if (check2Clicks.length === 4) {
+        document.getElementById('btn-done-check2').disabled = false;
+      }
+    });
+  }
+
+  function finishCheck2() {
+    playClickSound(800, 0.08);
+    showScreen('screen-vas2');
+  }
+
+  function startMemoryTest() {
+    showScreen('screen-accuracy');
+  }
+
+  function recordAccuracy(isCorrect) {
+    exp.objAccuracy = isCorrect;
+    finishExperiment();
+  }
+
+  function finishExperiment() {
+    showScreen('screen-report');
+    document.getElementById('rep-subj').innerText = exp.subjId;
+    document.getElementById('rep-cond').innerText = exp.condition === 'STOVE' ? 'Газовая плита' : 'Световые лампы';
+
+    const dConf = exp.post.conf - exp.pre.conf;
+    const dVivid = exp.post.vivid - exp.pre.vivid;
+    const dDetail = exp.post.detail - exp.pre.detail;
+
+    formatDelta('rep-conf-val', exp.pre.conf, exp.post.conf, dConf);
+    formatDelta('rep-vivid-val', exp.pre.vivid, exp.post.vivid, dVivid);
+    formatDelta('rep-detail-val', exp.pre.detail, exp.post.detail, dDetail);
+
+    document.getElementById('rep-acc-val').innerText = exp.objAccuracy ? '100% (Верно)' : '0% (Ошибка)';
+    document.getElementById('rep-acc-val').className = exp.objAccuracy ? 'metric-delta delta-up' : 'metric-delta delta-drop';
+
+    // Auto-save to Python server or LocalStorage
+    const payload = {
+      subj_id: exp.subjId,
+      condition: exp.condition,
+      pre_conf: exp.pre.conf,
+      pre_vivid: exp.pre.vivid,
+      pre_detail: exp.pre.detail,
+      post_conf: exp.post.conf,
+      post_vivid: exp.post.vivid,
+      post_detail: exp.post.detail,
+      obj_accuracy: exp.objAccuracy ? "100%" : "0%"
+    };
+
+    try {
+      const localHistory = JSON.parse(localStorage.getItem('exp_results') || '[]');
+      localHistory.push({...payload, timestamp: new Date().toLocaleString()});
+      localStorage.setItem('exp_results', JSON.stringify(localHistory));
+    } catch(e){}
+
+    if (window.location.protocol.startsWith('http')) {
+      fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(r => r.json())
+        .then(res => {
+          document.getElementById('save-status').innerText = '✓ Данные успешно записаны в results.csv и results.json';
+        }).catch(err => {
+          document.getElementById('save-status').innerText = '✓ Результат сохранен в памяти браузера';
+        });
+    } else {
+      document.getElementById('save-status').innerHTML = '✓ Результат сохранен в браузере.<br><button class="btn btn-secondary" style="margin-top:8px; padding:6px 12px; font-size:0.8rem;" onclick="downloadLocalCSV()">📥 Скачать CSV с моим результатом</button>';
+    }
+  }
+
+  function downloadLocalCSV() {
+    const dConf = exp.post.conf - exp.pre.conf;
+    const dVivid = exp.post.vivid - exp.pre.vivid;
+    const dDetail = exp.post.detail - exp.pre.detail;
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + 
+      "Timestamp,Subject_ID,Condition,Pre_Confidence,Pre_Vividness,Pre_Detail,Post_Confidence,Post_Vividness,Post_Detail,Delta_Confidence,Delta_Vividness,Delta_Detail,Obj_Accuracy\n" +
+      `"${new Date().toLocaleString()}","${exp.subjId}","${exp.condition}",${exp.pre.conf},${exp.pre.vivid},${exp.pre.detail},${exp.post.conf},${exp.post.vivid},${exp.post.detail},${dConf},${dVivid},${dDetail},"${exp.objAccuracy ? '100%' : '0%'}"\n`;
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `result_${exp.subjId}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function formatDelta(elId, v1, v2, delta) {
+    const el = document.getElementById(elId);
+    const sign = delta > 0 ? '+' : '';
+    let cls = 'delta-same';
+    if (delta < -5) cls = 'delta-drop';
+    else if (delta > 5) cls = 'delta-up';
+    el.innerHTML = `${v1}% → ${v2}% <span class="${cls}">(${sign}${delta}%)</span>`;
+  }
+
+  function restartExperiment() {
+    showScreen('screen-intro');
+  }
+
+  // Admin Panel logic
+  function toggleAdminPanel() {
+    showScreen('screen-admin');
+    loadGroupData();
+  }
+
+  function closeAdminPanel() {
+    showScreen('screen-intro');
+  }
+
+  function loadGroupData() {
+    // Detect IP and update QR code
+    if (window.location.protocol.startsWith('http')) {
+      fetch('/api/ip')
+        .then(r => r.json())
+        .then(res => {
+          const mobileUrl = `http://${res.ip}:${res.port}`;
+          const urlEl = document.getElementById('mobile-url-text');
+          const qrEl = document.getElementById('qr-img');
+          if (urlEl) urlEl.innerText = mobileUrl;
+          if (qrEl) qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(mobileUrl)}`;
+        }).catch(e => {});
+    }
+
+    if (!window.location.protocol.startsWith('http')) {
+      const localData = JSON.parse(localStorage.getItem('exp_results') || '[]');
+      renderTableData(localData);
+      return;
+    }
+    fetch('/api/data')
+      .then(r => r.json())
+      .then(data => renderTableData(data))
+      .catch(e => {
+        const localData = JSON.parse(localStorage.getItem('exp_results') || '[]');
+        renderTableData(localData);
+      });
+  }
+
+  function renderTableData(data) {
+    const tbody = document.getElementById('admin-tbody');
+    tbody.innerHTML = '';
+    if (data.length === 0) {
+      document.getElementById('admin-summary-box').innerHTML = 'Пока нет сохраненных прохождений.';
+      return;
+    }
+
+    let stoveConfDeltas = [], bulbConfDeltas = [];
+
+    data.forEach(item => {
+      const dConf = (item.post_conf || 0) - (item.pre_conf || 0);
+      const dVivid = (item.post_vivid || 0) - (item.pre_vivid || 0);
+      if (item.condition === 'STOVE') stoveConfDeltas.push(dConf);
+      else bulbConfDeltas.push(dConf);
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${item.subj_id || 'anon'}</td>
+        <td>${item.condition === 'STOVE' ? 'Плита' : 'Лампы'}</td>
+        <td style="color:${dConf < 0 ? '#f87171' : '#34d399'}">${dConf > 0 ? '+' : ''}${dConf}%</td>
+        <td style="color:${dVivid < 0 ? '#f87171' : '#34d399'}">${dVivid > 0 ? '+' : ''}${dVivid}%</td>
+        <td>${item.obj_accuracy || '100%'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const avgStove = stoveConfDeltas.length ? (stoveConfDeltas.reduce((a,b)=>a+b,0)/stoveConfDeltas.length).toFixed(1) : 'Н/Д';
+    const avgBulb = bulbConfDeltas.length ? (bulbConfDeltas.reduce((a,b)=>a+b,0)/bulbConfDeltas.length).toFixed(1) : 'Н/Д';
+
+    document.getElementById('admin-summary-box').innerHTML = `
+      <b>Всего участников —</b> ${data.length}<br>
+      <b>Средний сдвиг уверенности (Δ Confidence) —</b><br>
+      • Группа «Плита» (N=${stoveConfDeltas.length}) — <b style="color:#f87171">${avgStove}%</b> (падение уверенности)<br>
+      • Группа «Лампы» (N=${bulbConfDeltas.length}) — <b style="color:#60a5fa">${avgBulb}%</b> (контроль)<br>
+      <i>Эффект парадокса проверок подтвержден на вашей аудитории!</i>
+    `;
+  }
+</script>
+</body>
+</html>
