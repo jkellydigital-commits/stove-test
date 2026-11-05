@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -339,7 +339,19 @@
 
     <div id="save-status" style="font-size:0.8rem; text-align:center; color:var(--success); margin-bottom:12px;">Данные успешно записаны в results.csv и results.json</div>
 
-    <button class="btn btn-secondary" onclick="restartExperiment()">Пройти еще раз</button>
+    <button class="btn" style="margin-bottom:10px; background:#10b981;" onclick="copyStudentSummary()">📋 Скопировать строку для отчета (в чат/список)</button>
+<button class="btn btn-secondary" onclick="restartExperiment()">Пройти еще раз</button>
+<script>
+function copyStudentSummary() {
+  const dConf = exp.post.conf - exp.pre.conf;
+  const dVivid = exp.post.vivid - exp.pre.vivid;
+  const condName = exp.condition === 'STOVE' ? 'Плита' : 'Лампы';
+  const str = `Участник ${exp.subjId} | ${condName} | ΔУверенность: ${dConf > 0 ? '+' : ''}${dConf}% | ΔЯркость: ${dVivid > 0 ? '+' : ''}${dVivid}% | Точность: ${exp.objAccuracy ? '100%' : '0%'}`;
+  navigator.clipboard.writeText(str).then(() => {
+    alert('Строка скопирована в буфер обмена!\n\n' + str + '\n\nТеперь ее можно вставить в чат или таблицу.');
+  });
+}
+</script>
   </div>
 
   <!-- SCREEN 9: ПАНЕЛЬ ПРЕПОДАВАТЕЛЯ / СВОДКА ГРУППЫ -->
@@ -731,7 +743,7 @@
       fetch('/api/ip')
         .then(r => r.json())
         .then(res => {
-          const mobileUrl = `http://${res.ip}:${res.port}`;
+          const mobileUrl = window.location.protocol.startsWith("https") ? window.location.href : `http://${res.ip}:${res.port}`;
           const urlEl = document.getElementById('mobile-url-text');
           const qrEl = document.getElementById('qr-img');
           if (urlEl) urlEl.innerText = mobileUrl;
@@ -794,3 +806,4 @@
 </script>
 </body>
 </html>
+
