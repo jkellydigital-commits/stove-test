@@ -1,0 +1,19 @@
+{
+  "subj_id": "Плпл",
+  "condition": "BULBS",
+  "condition_label": "Световые индикаторы",
+  "duration_sec": 32,
+  "duration_str": "32 сек",
+  "duration_short": "0:32",
+  "pre_conf": 50,
+  "pre_vivid": 50,
+  "pre_detail": 50,
+  "post_conf": 50,
+  "post_vivid": 50,
+  "post_detail": 50,
+  "delta_conf": 0,
+  "delta_vivid": 0,
+  "delta_detail": 0,
+  "obj_accuracy": "100%",
+  "timestamp": "06.11.2026, 20:35:02"
+}
