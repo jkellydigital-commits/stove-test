@@ -1,0 +1,19 @@
+{
+  "subj_id": "613",
+  "condition": "STOVE",
+  "condition_label": "Газовая плита",
+  "duration_sec": 162,
+  "duration_str": "2 мин 42 сек",
+  "duration_short": "2:42",
+  "pre_conf": 98,
+  "pre_vivid": 70,
+  "pre_detail": 60,
+  "post_conf": 86,
+  "post_vivid": 68,
+  "post_detail": 69,
+  "delta_conf": -12,
+  "delta_vivid": -2,
+  "delta_detail": 9,
+  "obj_accuracy": "100%",
+  "timestamp": "08.11.2026, 23:18:56"
+}
