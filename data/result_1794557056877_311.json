@@ -1,0 +1,19 @@
+{
+  "subj_id": "311",
+  "condition": "BULBS",
+  "condition_label": "Световые индикаторы",
+  "duration_sec": 190,
+  "duration_str": "3 мин 10 сек",
+  "duration_short": "3:10",
+  "pre_conf": 88,
+  "pre_vivid": 80,
+  "pre_detail": 42,
+  "post_conf": 95,
+  "post_vivid": 92,
+  "post_detail": 69,
+  "delta_conf": 7,
+  "delta_vivid": 12,
+  "delta_detail": 27,
+  "obj_accuracy": "0%",
+  "timestamp": "13.11.2026, 15:04:16"
+}
